@@ -23,7 +23,14 @@ const initialData = {
     form_task_1: JSON.stringify({
       correctDomain: '',
       correctSubdomain: '',
-      correctDifficultyScore: ''
+      correctDifficultyScore: '',
+      questionQuality: '',
+      human_grade_reference: 0,
+      referenceRationale: '',
+      human_grade_candidate_incorrect_answer_1: 0,
+      incorrect1Rationale: '',
+      human_grade_candidate_incorrect_answer_2: 0,
+      incorrect2Rationale: ''
     }),
     modified_problem: "modified_problem",
     task_1_final: "task_1_final",
@@ -163,23 +170,51 @@ function stepperReducer(state, action) {
 // Custom hook to manage stepper state
 function useStepperState(initialState) {
   const loadSavedState = () => {
-    const savedState = localStorage.getItem('stepperState');
-    return savedState ? JSON.parse(savedState) : initialState;
+    try {
+      const savedState = localStorage.getItem('stepperState');
+      return savedState ? JSON.parse(savedState) : initialState;
+    } catch (error) {
+      console.error('Error loading saved state:', error);
+      return initialState;
+    }
   };
 
   const [state, dispatch] = useReducer(stepperReducer, loadSavedState());
   const [currentStep, setCurrentStep] = useState(() => {
-    const savedStep = localStorage.getItem('currentStep');
-    return savedStep || "prompt 1";
+    try {
+      const savedStep = localStorage.getItem('currentStep');
+      return savedStep || Object.keys(initialState)[0]; // Default to first step
+    } catch (error) {
+      console.error('Error loading current step:', error);
+      return Object.keys(initialState)[0];
+    }
   });
+
+  // Add state validation
+  useEffect(() => {
+    if (!state || !currentStep || !state[currentStep]) {
+      console.log('Resetting to initial state due to invalid state');
+      dispatch({ type: ACTIONS.RESET_STATE });
+      setCurrentStep(Object.keys(initialState)[0]);
+    }
+  }, [state, currentStep]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('stepperState', JSON.stringify(state));
-    localStorage.setItem('currentStep', currentStep);
+    try {
+      localStorage.setItem('stepperState', JSON.stringify(state));
+      localStorage.setItem('currentStep', currentStep);
+    } catch (error) {
+      console.error('Error saving state:', error);
+    }
   }, [state, currentStep]);
 
   const updateVariable = (step, key, value) => {
+    if (!state[step]) {
+      console.error(`Invalid step: ${step}`);
+      return;
+    }
+
     // First update the current step's variable
     dispatch({
       type: ACTIONS.UPDATE_VARIABLE,
@@ -219,26 +254,19 @@ function useStepperState(initialState) {
     }
   };
 
-  const resetState = () => {
-    if (window.confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
-      dispatch({ type: ACTIONS.RESET_STATE });
-      localStorage.removeItem('stepperState');
-      localStorage.removeItem('currentStep');
-      window.location.reload(); // Force reload to ensure clean state
-    }
-  };
-
-  useEffect(() => {
-    // Force re-render when state changes
-    console.log('State updated:', state[currentStep]);
-  }, [state, currentStep]);
-
   return {
     state,
     currentStep,
     setCurrentStep,
     updateVariable,
-    resetState
+    resetState: () => {
+      if (window.confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+        dispatch({ type: ACTIONS.RESET_STATE });
+        setCurrentStep(Object.keys(initialState)[0]);
+        localStorage.removeItem('stepperState');
+        localStorage.removeItem('currentStep');
+      }
+    }
   };
 }
 
@@ -265,6 +293,32 @@ function resolvePromptTemplate(template, state) {
   return resolvedPrompt;
 }
 
+const formatTaskFinal = (formData) => {
+  try {
+    const data = JSON.parse(formData);
+    return `Question Quality Assessment:
+Domain: ${data.correctDomain}
+Subdomain: ${data.correctSubdomain}
+Difficulty Score: ${data.correctDifficultyScore}
+Quality Analysis: ${data.questionQuality}
+
+Solution Grading:
+1. Reference Answer
+Grade: ${data.human_grade_reference}
+Rationale: ${data.referenceRationale}
+
+2. Incorrect Answer 1
+Grade: ${data.human_grade_candidate_incorrect_answer_1}
+Rationale: ${data.incorrect1Rationale}
+
+3. Incorrect Answer 2
+Grade: ${data.human_grade_candidate_incorrect_answer_2}
+Rationale: ${data.incorrect2Rationale}`;
+  } catch (error) {
+    return 'Invalid form data';
+  }
+};
+
 const Stepper = () => {
   const [showInspector, setShowInspector] = useState(false);
   const {
@@ -274,6 +328,11 @@ const Stepper = () => {
     updateVariable,
     resetState
   } = useStepperState(initialData);
+
+  // Add safety check
+  if (!state || !currentStep || !state[currentStep]) {
+    return <div>Loading...</div>;
+  }
 
   const getAllVariables = () => {
     const variables = {
