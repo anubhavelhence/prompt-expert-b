@@ -3,6 +3,7 @@ import "./../css/stepper.css";
 import RowRenderer from "./RowRenderer";
 import TextInput from "./TextInput";
 import VariableInspectorModal from "./VariableInspectorModal";
+import MetadataForm from './MetadataForm';
 
 const initialData = {
   "prompt 1": {
@@ -16,11 +17,17 @@ const initialData = {
     prompt: "<n>You are an expert evaluator tasked with assessing the quality of proposed questions for testing Large Language Models (LLMs). Your evaluation is crucial for ensuring that these questions meet the required standards for difficulty, originality, and expert-level reasoning. Your assessment will contribute to the advancement of AI evaluation techniques.<n><n>Here are the details of the proposed question:<n><n>Domain: <domain>{{DOMAIN}}</domain><n>Subdomain: <subdomain>{{SUBDOMAIN}}</subdomain><n>Use Case (if provided): <use_case>{{USE_CASE}}</use_case><n>Difficulty Score: <difficulty_score>{{DIFFICULTY_SCORE}}</difficulty_score><n><n>Problem Statement:<n><problem><n>{{initial_problem}}<n></problem><n><n>Your task is to evaluate the question based on the following criteria:<n><n>1. Formatting: Is the format of the question correct?<n>2. Originality: Is this question original material?<n>3. Difficulty: Is this question difficult enough?<n>4. Information Dependencies: Does this question require information that is not included in the prompt and could not easily be found on the internet?<n>5. Temporal Retrieval: Does this question require information based on events past April 2024?<n>6. Expert-level reasoning: Does this question require expert-level reasoning and intelligence?<n>7. Outcome-based: Is the question presented in a way that there is likely an objectively correct, gradable answer (or a finite number of plausibly correct answers) that multiple domain experts could agree on?<n><n>Instructions:<n>1. Begin by carefully reading the problem statement and associated details.<n>2. For each criterion, provide a detailed assessment inside <criterion_analysis> tags. Consider the strengths and weaknesses of the question relative to each criterion by:<n>   a. Listing key points from the problem statement relevant to the criterion.<n>   b. Considering both positive and negative aspects related to the criterion.<n>   c. Summarizing the overall assessment for the criterion.<n>3. After your assessment, provide specific feedback and suggestions for improvement, if needed.<n>4. Use the following format for your evaluation of each criterion:<n><n><evaluation><n><criterion>Criterion name</criterion><n><assessment>Your assessment of whether the question meets this criterion</assessment><n><feedback>Specific feedback and suggestions for improvement, if needed</feedback><n></evaluation><n><n>5. After evaluating all criteria, provide the following:<n>   a. A difficulty rating (1-5) based on this guidance:<n>      1: Challenging but straightforward for a strong field student<n>      5: Extremely difficult even for subfield experts<n>   b. Your assessment of the appropriate domain and subdomain for this question, which may differ from the provided information.<n><n>6. Finally, provide an overall assessment of the question's quality and suitability for testing LLMs, along with any additional suggestions for improvement.<n><n>Use the following format for your final assessment:<n><n><final_assessment><n><difficulty_rating>Your assigned difficulty rating (1-5)</difficulty_rating><n><assigned_domain>Your assigned domain</assigned_domain><n><assigned_subdomain>Your assigned subdomain</assigned_subdomain><n><overall_quality>Your overall assessment of the question's quality and suitability</overall_quality><n><improvement_suggestions>Any additional suggestions for improving the question</improvement_suggestions><n></final_assessment><n><n>Remember to be thorough and critical in your evaluation. The goal is to ensure that the questions are of the highest quality for testing LLMs. Consider the following guidelines when evaluating:<n><n>- Questions should focus on evaluating reasoning and intelligence over factual knowledge.<n>- They should require multi-step reasoning and deep thinking.<n>- Questions should not be easily answerable without specific domain expertise.<n>- They should be novel and unlikely to be rote problems for models.<n>- Ensure questions can't be answered with simple fact retrieval.<n>- The target difficulty level should be such that an average Doctorate-level student or equivalent (8+ years professional experience) would score 60-80%.<n>- Questions should be challenging enough that current state-of-the-art models get <15% correct 0-shot.<n>- All content should be original and not in the public domain.<n><n>Begin your evaluation now, starting with your analysis for the first criterion.",
     recommendation: "Just verify the Quality of Question. No as such Recommendation.",
   },
-  "prompt 2": {
+  "Task 1": {
     heading: "Prompt 2 - Draft problem and/or increase difficulty (OPTIONAL)",
     instruction: "Usage: This prompt can help you increase the difficulty of the question. But this is optional",
     prompt: "<n>You are an expert in creating challenging, high-level questions for evaluating Large Language Models (LLMs) in specific domains. Your task is to design a scenario or problem that requires deep expertise and complex reasoning to solve, mimicking real-life situations in the given field.<n><n>First, review the following inputs:<n><n><domain><n>{{DOMAIN}}<n></domain><n><n><subdomain><n>{{SUBDOMAIN}}<n></subdomain><n><n><use_case><n>{{USE_CASE}}<n></use_case><n><n><problem><n>{{initial_problem}}<n></problem><n><n>Using these inputs, create an expert-level question that meets the following criteria:<n><n>1. Requires doctorate-level expertise in the given domain and subdomain.<n>2. Evaluates reasoning and intelligence over factual knowledge.<n>3. Involves multiple reasoning steps, potentially including calculations.<n>4. Mimics a real-life situation in the domain.<n>5. Uses data or information to guide interpretation or decision-making.<n>6. Has an objective, correct answer that can be graded.<n>7. Is very difficult for both LLMs and non-experts to answer correctly.<n>8. Prioritizes the reasoning process over background knowledge.<n>9. Cannot be answered without specific domain expertise.<n>10. Contains original content unlikely to be found on the internet.<n>11. Cannot be answered with simple fact retrieval.<n>12. Leans towards an outcome-based problem rather than a fuzzy problem.<n>13. Is clear in what it's asking and typically limited to one main question.<n>14. Does not rely on information beyond April 2024.<n><n>Follow these steps to create your question:<n><n>1. Develop a realistic context or background for the problem.<n>2. Provide relevant data or information necessary for solving the problem.<n>3. Formulate a clear, concise question that requires expert reasoning to answer.<n>4. Ensure the question is sufficiently complex and requires multiple steps to solve.<n><n>Before presenting your final question, wrap your thought process in <thought_process> tags. In this section:<n>- List key aspects of the domain, subdomain, and use case<n>- Brainstorm 3-5 potential problem scenarios<n>- For each scenario, evaluate how it meets the criteria<n>- Choose the best scenario and explain why<n>It's OK for this section to be quite long.<n><n>After your thought process, present your created scenario and question within <expert_question> tags.<n><n>Finally, provide a brief explanation of why this question meets the criteria for an expert-level, challenging problem for LLMs. Include this explanation within <explanation> tags.<n><n>Example output structure (do not copy the content, only the structure):<n><n><thought_process><n>[Detailed thought process addressing each step]<n></thought_process><n><n><expert_question><n>[Scenario description and expert-level question]<n></expert_question><n><n><explanation><n>[Explanation of why the question meets the criteria]<n></explanation><n><n>Remember to focus on the real-world application, provide sufficient details or data, ensure novelty, and do not include the answer or grading rubric.",
+    form_task_1: JSON.stringify({
+      correctDomain: '',
+      correctSubdomain: '',
+      correctDifficultyScore: ''
+    }),
     modified_problem: "modified_problem",
+    task_1_final : "task_1_final",
     recommendation: "Try to include some aspects to the initial question to make it more technical based on this prompt output.",
   },
   "prompt 3": {
@@ -265,24 +272,24 @@ const Stepper = () => {
 
   const getAllVariables = () => {
     const variables = {
-      DOMAIN: state["prompt 1"].DOMAIN,
-      SUBDOMAIN: state["prompt 1"].SUBDOMAIN,
-      USE_CASE: state["prompt 1"].USE_CASE,
-      DIFFICULTY_SCORE: state["prompt 1"].DIFFICULTY_SCORE,
-      initial_problem: state["prompt 1"].initial_problem,
-      modified_problem: state["prompt 2"].modified_problem,
-      incorrect_solution_1: state["prompt 3"].incorrect_solution_1,
-      incorrect_solution_2: state["prompt 3"].incorrect_solution_2,
-      expert_reference_answer: state["prompt 4"].expert_reference_answer,
-      claude_restructured_answer: state["prompt 4"].claude_restructured_answer,
-      expert_final_answer: state["prompt 4"].expert_final_answer,
-      rough_rubric: state["prompt5.1"].rough_rubric,
-      rubric: state["prompt5.1"].rubric,
-      rubrictest_incorrect_1: state["prompt7.1"].rubrictest_incorrect_1,
-      rubrictest_incorrect_2: state["prompt7.2"].rubrictest_incorrect_2,
-      rubrictest_correct: state["prompt7.3"].rubrictest_correct,
-      key_differences: state["prompt 6"].key_differences,
-      retrieval_sensitivity: state["prompt 8"].retrieval_sensitivity
+      DOMAIN: state["prompt 1"]?.DOMAIN || '',
+      SUBDOMAIN: state["prompt 1"]?.SUBDOMAIN || '',
+      USE_CASE: state["prompt 1"]?.USE_CASE || '',
+      DIFFICULTY_SCORE: state["prompt 1"]?.DIFFICULTY_SCORE || '',
+      initial_problem: state["prompt 1"]?.initial_problem || '',
+      modified_problem: state["Task 1"]?.modified_problem || '',
+      incorrect_solution_1: state["prompt 3"]?.incorrect_solution_1 || '',
+      incorrect_solution_2: state["prompt 3"]?.incorrect_solution_2 || '',
+      expert_reference_answer: state["prompt 4"]?.expert_reference_answer || '',
+      claude_restructured_answer: state["prompt 4"]?.claude_restructured_answer || '',
+      expert_final_answer: state["prompt 4"]?.expert_final_answer || '',
+      rough_rubric: state["prompt5.1"]?.rough_rubric || '',
+      rubric: state["prompt5.1"]?.rubric || '',
+      rubrictest_incorrect_1: state["prompt7.1"]?.rubrictest_incorrect_1 || '',
+      rubrictest_incorrect_2: state["prompt7.2"]?.rubrictest_incorrect_2 || '',
+      rubrictest_correct: state["prompt7.3"]?.rubrictest_correct || '',
+      key_differences: state["prompt 6"]?.key_differences || '',
+      retrieval_sensitivity: state["prompt 8"]?.retrieval_sensitivity || ''
     };
     return variables;
   };
@@ -296,10 +303,17 @@ const Stepper = () => {
             key={key}
             keyLabel={key}
             value={
-              <TextInput
-                value={state[currentStep][key]}
-                onChange={(e) => updateVariable(currentStep, key, e.target.value)}
-              />
+              key === 'form_task_1' ? (
+                <MetadataForm
+                  value={state[currentStep][key]}
+                  onChange={(value) => updateVariable(currentStep, key, value)}
+                />
+              ) : (
+                <TextInput
+                  value={state[currentStep][key]}
+                  onChange={(e) => updateVariable(currentStep, key, e.target.value)}
+                />
+              )
             }
           />
         ))}
@@ -348,7 +362,7 @@ const Stepper = () => {
               value={<div className="instruction-text">{state[currentStep].instruction}</div>} 
             />
             {renderVariables(getInputVariables(), "Inputs To the Below Prompt")}
-            <RowRenderer 
+            <RowRenderer
               keyLabel="Prompt" 
               value={resolvePromptTemplate(state[currentStep].prompt, state)} 
             />
@@ -364,7 +378,6 @@ const Stepper = () => {
         onClose={() => setShowInspector(false)}
         variables={getAllVariables()}
         onUpdate={(name, value) => {
-          // Find the correct step and variable to update
           Object.entries(state).forEach(([step, data]) => {
             Object.keys(data).forEach(key => {
               if (key === name) {
