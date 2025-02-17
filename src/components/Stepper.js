@@ -20,14 +20,14 @@ const initialData = {
   "Task 1": {
     heading: "Prompt 2 - Draft problem and/or increase difficulty (OPTIONAL)",
     instruction: "Usage: This prompt can help you increase the difficulty of the question. But this is optional",
-    prompt: "<n>You are an expert in creating challenging, high-level questions for evaluating Large Language Models (LLMs) in specific domains. Your task is to design a scenario or problem that requires deep expertise and complex reasoning to solve, mimicking real-life situations in the given field.<n><n>First, review the following inputs:<n><n><domain><n>{{DOMAIN}}<n></domain><n><n><subdomain><n>{{SUBDOMAIN}}<n></subdomain><n><n><use_case><n>{{USE_CASE}}<n></use_case><n><n><problem><n>{{initial_problem}}<n></problem><n><n>Using these inputs, create an expert-level question that meets the following criteria:<n><n>1. Requires doctorate-level expertise in the given domain and subdomain.<n>2. Evaluates reasoning and intelligence over factual knowledge.<n>3. Involves multiple reasoning steps, potentially including calculations.<n>4. Mimics a real-life situation in the domain.<n>5. Uses data or information to guide interpretation or decision-making.<n>6. Has an objective, correct answer that can be graded.<n>7. Is very difficult for both LLMs and non-experts to answer correctly.<n>8. Prioritizes the reasoning process over background knowledge.<n>9. Cannot be answered without specific domain expertise.<n>10. Contains original content unlikely to be found on the internet.<n>11. Cannot be answered with simple fact retrieval.<n>12. Leans towards an outcome-based problem rather than a fuzzy problem.<n>13. Is clear in what it's asking and typically limited to one main question.<n>14. Does not rely on information beyond April 2024.<n><n>Follow these steps to create your question:<n><n>1. Develop a realistic context or background for the problem.<n>2. Provide relevant data or information necessary for solving the problem.<n>3. Formulate a clear, concise question that requires expert reasoning to answer.<n>4. Ensure the question is sufficiently complex and requires multiple steps to solve.<n><n>Before presenting your final question, wrap your thought process in <thought_process> tags. In this section:<n>- List key aspects of the domain, subdomain, and use case<n>- Brainstorm 3-5 potential problem scenarios<n>- For each scenario, evaluate how it meets the criteria<n>- Choose the best scenario and explain why<n>It's OK for this section to be quite long.<n><n>After your thought process, present your created scenario and question within <expert_question> tags.<n><n>Finally, provide a brief explanation of why this question meets the criteria for an expert-level, challenging problem for LLMs. Include this explanation within <explanation> tags.<n><n>Example output structure (do not copy the content, only the structure):<n><n><thought_process><n>[Detailed thought process addressing each step]<n></thought_process><n><n><expert_question><n>[Scenario description and expert-level question]<n></expert_question><n><n><explanation><n>[Explanation of why the question meets the criteria]<n></explanation><n><n>Remember to focus on the real-world application, provide sufficient details or data, ensure novelty, and do not include the answer or grading rubric.",
     form_task_1: JSON.stringify({
       correctDomain: '',
       correctSubdomain: '',
       correctDifficultyScore: ''
     }),
     modified_problem: "modified_problem",
-    task_1_final : "task_1_final",
+    task_1_final: "task_1_final",
+    prompt: "<n>You are an expert in creating challenging, high-level questions for evaluating Large Language Models (LLMs) in specific domains. Your task is to design a scenario or problem that requires deep expertise and complex reasoning to solve, mimicking real-life situations in the given field.<n><n>First, review the following inputs:<n><n><domain><n>{{DOMAIN}}<n></domain><n><n><subdomain><n>{{SUBDOMAIN}}<n></subdomain><n><n><use_case><n>{{USE_CASE}}<n></use_case><n><n><problem><n>{{initial_problem}}<n></problem><n><n>Using these inputs, create an expert-level question that meets the following criteria:<n><n>1. Requires doctorate-level expertise in the given domain and subdomain.<n>2. Evaluates reasoning and intelligence over factual knowledge.<n>3. Involves multiple reasoning steps, potentially including calculations.<n>4. Mimics a real-life situation in the domain.<n>5. Uses data or information to guide interpretation or decision-making.<n>6. Has an objective, correct answer that can be graded.<n>7. Is very difficult for both LLMs and non-experts to answer correctly.<n>8. Prioritizes the reasoning process over background knowledge.<n>9. Cannot be answered without specific domain expertise.<n>10. Contains original content unlikely to be found on the internet.<n>11. Cannot be answered with simple fact retrieval.<n>12. Leans towards an outcome-based problem rather than a fuzzy problem.<n>13. Is clear in what it's asking and typically limited to one main question.<n>14. Does not rely on information beyond April 2024.<n><n>Follow these steps to create your question:<n><n>1. Develop a realistic context or background for the problem.<n>2. Provide relevant data or information necessary for solving the problem.<n>3. Formulate a clear, concise question that requires expert reasoning to answer.<n>4. Ensure the question is sufficiently complex and requires multiple steps to solve.<n><n>Before presenting your final question, wrap your thought process in <thought_process> tags. In this section:<n>- List key aspects of the domain, subdomain, and use case<n>- Brainstorm 3-5 potential problem scenarios<n>- For each scenario, evaluate how it meets the criteria<n>- Choose the best scenario and explain why<n>It's OK for this section to be quite long.<n><n>After your thought process, present your created scenario and question within <expert_question> tags.<n><n>Finally, provide a brief explanation of why this question meets the criteria for an expert-level, challenging problem for LLMs. Include this explanation within <explanation> tags.<n><n>Example output structure (do not copy the content, only the structure):<n><n><thought_process><n>[Detailed thought process addressing each step]<n></thought_process><n><n><expert_question><n>[Scenario description and expert-level question]<n></expert_question><n><n><explanation><n>[Explanation of why the question meets the criteria]<n></explanation><n><n>Remember to focus on the real-world application, provide sufficient details or data, ensure novelty, and do not include the answer or grading rubric.",
     recommendation: "Try to include some aspects to the initial question to make it more technical based on this prompt output.",
   },
   "prompt 3": {
@@ -228,6 +228,11 @@ function useStepperState(initialState) {
     }
   };
 
+  useEffect(() => {
+    // Force re-render when state changes
+    console.log('State updated:', state[currentStep]);
+  }, [state, currentStep]);
+
   return {
     state,
     currentStep,
@@ -324,9 +329,16 @@ const Stepper = () => {
   const getInputVariables = () => {
     const allKeys = Object.keys(state[currentStep]);
     const promptIndex = allKeys.indexOf('prompt');
-    return allKeys.slice(0, promptIndex).filter(key => 
+    const inputVars = allKeys.slice(0, promptIndex).filter(key => 
       !['heading', 'instruction'].includes(key)
     );
+    
+    // Add form_task_1 for Task 1
+    if (currentStep === "Task 1" && !inputVars.includes('form_task_1')) {
+      inputVars.push('form_task_1');
+    }
+    
+    return inputVars;
   };
 
   const getOutputVariables = () => {
