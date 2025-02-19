@@ -1,7 +1,7 @@
 import React from "react";
 import "./../css/rowRenderer.css";
 
-const RowRenderer = ({ keyLabel, value }) => {
+const RowRenderer = ({ keyLabel, value, onGenerate }) => {
   // Function to safely render HTML content
   const createMarkup = (content) => {
     if (typeof content !== 'string') return { __html: '' };
@@ -20,7 +20,14 @@ const RowRenderer = ({ keyLabel, value }) => {
 
   return (
     <div className="row-renderer">
-      <div className="key">{keyLabel}</div>
+      <div className="key">
+        {keyLabel}
+        {onGenerate && (
+          <button className="generate-button" onClick={onGenerate}>
+            Generate
+          </button>
+        )}
+      </div>
       <div className="value">
         {keyLabel === "Prompt" ? (
           <div dangerouslySetInnerHTML={createMarkup(value)} />

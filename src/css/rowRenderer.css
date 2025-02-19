@@ -18,6 +18,8 @@
   color: #555;
   width: 30%;
   text-align: left;
+  display: flex;
+  align-items: center;
 }
 
 /* Value Styling */
@@ -37,4 +39,19 @@
 
 .row-renderer:focus {
   outline: none;
+}
+
+.generate-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.generate-button:hover {
+  background: #45a049;
 }
