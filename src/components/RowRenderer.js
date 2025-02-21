@@ -1,7 +1,7 @@
 import React from "react";
 import "./../css/rowRenderer.css";
 
-const RowRenderer = ({ keyLabel, value, onGenerate }) => {
+const RowRenderer = ({ keyLabel, value, onGenerate, toUpload }) => {
   // Function to safely render HTML content
   const createMarkup = (content) => {
     if (typeof content !== 'string') return { __html: '' };
@@ -27,6 +27,18 @@ const RowRenderer = ({ keyLabel, value, onGenerate }) => {
             Generate
           </button>
         )}
+        {toUpload && (
+        <input
+          type="file"
+          accept=".docx"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              toUpload(file);
+            }
+          }}
+        />
+      )}
       </div>
       <div className="value">
         {keyLabel === "Prompt" ? (

@@ -4,10 +4,12 @@ import RowRenderer from "./RowRenderer";
 import TextInput from "./TextInput";
 import VariableInspectorModal from "./VariableInspectorModal";
 import MetadataForm from './MetadataForm';
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
 
 const initialData = {
   "Task 0": {
-    heading: "Fill these variables with required information from Expert A's folder",
+    heading: "Task 0: Fill these variables with required information from Expert A's folder",
     instruction: "Fill these variables with required information from Expert A's folder",
     expert_a_domain: "",
     expert_a_subdomain: "",
@@ -22,7 +24,7 @@ const initialData = {
     expert_a_correct_rubric_test: "",
   },
   "Task 1": {
-    heading: "Review and Grade Solutions",
+    heading: "Task 1: Review and Grade Solutions",
     instruction: "Based on the information from Task 0, fill out the grading form below",
     form_task_1: JSON.stringify({
       expert_b_domain: '',
@@ -269,6 +271,14 @@ Summary of Grading Results:
   }
 };
 
+
+
+
+
+
+
+
+
 const Stepper = () => {
   const [showInspector, setShowInspector] = useState(false);
   const {
@@ -286,26 +296,42 @@ const Stepper = () => {
 
   const getAllVariables = () => {
     const variables = {
-      DOMAIN: state["prompt 1"]?.DOMAIN || '',
-      SUBDOMAIN: state["prompt 1"]?.SUBDOMAIN || '',
-      USE_CASE: state["prompt 1"]?.USE_CASE || '',
-      DIFFICULTY_SCORE: state["prompt 1"]?.DIFFICULTY_SCORE || '',
-      initial_problem: state["prompt 1"]?.initial_problem || '',
-      modified_problem: state["Task 1"]?.modified_problem || '',
-      incorrect_solution_1: state["prompt 3"]?.incorrect_solution_1 || '',
-      incorrect_solution_2: state["prompt 3"]?.incorrect_solution_2 || '',
-      expert_reference_answer: state["prompt 4"]?.expert_reference_answer || '',
-      claude_restructured_answer: state["prompt 4"]?.claude_restructured_answer || '',
-      expert_final_answer: state["prompt 4"]?.expert_final_answer || '',
-      rough_rubric: state["prompt5.1"]?.rough_rubric || '',
-      rubric: state["prompt5.1"]?.rubric || '',
-      rubrictest_incorrect_1: state["prompt7.1"]?.rubrictest_incorrect_1 || '',
-      rubrictest_incorrect_2: state["prompt7.2"]?.rubrictest_incorrect_2 || '',
-      rubrictest_correct: state["prompt7.3"]?.rubrictest_correct || '',
-      key_differences: state["prompt 6"]?.key_differences || '',
-      retrieval_sensitivity: state["prompt 8"]?.retrieval_sensitivity || ''
+      expert_a_domain: state["Task 0"]?.expert_a_domain || '',
+      expert_a_subdomain: state["Task 0"]?.expert_a_subdomain || '',
+      expert_a_difficultyscore: state["Task 0"]?.expert_a_difficultyscore || '',
+      expert_a_problem: state["Task 0"]?.expert_a_problem || '',      
+      expert_a_rubric: state["Task 0"]?.expert_a_rubric || '',
+      expert_a_incorrect_1: state["Task 0"]?.expert_a_incorrect_1 || '',      
+      expert_a_incorrect_2: state["Task 0"]?.expert_a_incorrect_2 || '',      
+      expert_a_correct: state["Task 0"]?.expert_a_correct || '',
+      expert_a_incorrect_1_rubric_test: state["Task 0"]?.expert_a_incorrect_1_rubric_test || '',
+      expert_a_incorrect_2_rubric_test: state["Task 0"]?.expert_a_incorrect_2_rubric_test || '',
+      expert_a_correct_rubric_test: state["Task 0"]?.expert_a_correct_rubric_test || '',  
     };
     return variables;
+  };
+
+
+  // Function to extract text from a .docx file
+  const extractTextFromDocx = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = new PizZip(arrayBuffer);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
+    const text = doc.getFullText();
+    return text;
+  };
+
+  // Function to handle file upload
+  const handleFileUpload = async (file, currentStep, key) => {
+    try {
+      const text = await extractTextFromDocx(file);
+      updateVariable(currentStep, key, text);
+    } catch (error) {
+      console.error("Error extracting text from .docx file:", error);
+    }
   };
 
   const renderVariables = (variables, heading) => {
@@ -333,6 +359,12 @@ const Stepper = () => {
               const formData = state[currentStep][key];
               updateVariable(currentStep, 'task_1_final', formatTaskFinal(formData));
             } : undefined}
+
+            toUpload={
+              ['expert_a_problem', 'expert_a_rubric', 'expert_a_incorrect_1', 'expert_a_incorrect_2', 'expert_a_correct', 'expert_a_incorrect_1_rubric_test', 'expert_a_incorrect_2_rubric_test', 'expert_a_correct_rubric_test'].includes(key) ? 
+              (file) => {
+                handleFileUpload(file, currentStep, key);
+              } : undefined}
           />
         ))}
       </>
@@ -344,7 +376,7 @@ const Stepper = () => {
     const promptIndex = allKeys.indexOf('prompt');
     const inputVars = allKeys.filter(key => 
       key !== 'prompt' && key !== 'task_1_final' && key !== 'recommendation'
-    );
+    && key !== 'heading' && key !== 'instruction');
 
     return inputVars;
   };
@@ -353,9 +385,11 @@ const Stepper = () => {
     const allKeys = Object.keys(state[currentStep]);
     const promptIndex = allKeys.indexOf('prompt');
     return allKeys.slice(promptIndex + 1).filter(key =>
-      !['recommendation'].includes(key)
+      !['recommendation'].includes(key) && key !== 'heading' && key !== 'instruction'
     );
   };
+
+
 
   return (
     <>
@@ -386,7 +420,7 @@ const Stepper = () => {
               keyLabel="Prompt"
               value={resolvePromptTemplate(state[currentStep].prompt, state)}
             />
-            {renderVariables(getOutputVariables(), "Outputs required after running the prompt")}
+            {/* {renderVariables(getOutputVariables(), "Outputs required after running the prompt")} */}
             <h4>Recommendation</h4>
             <h5>{state[currentStep]?.recommendation}</h5>
           </div>
